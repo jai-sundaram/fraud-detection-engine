@@ -1,7 +1,6 @@
 package com.engine.fraud_detection.controller;
 
-import java.util.ArrayList;
-
+import java.util.ArrayDeque;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,7 +24,7 @@ public class TransactionController {
         transactionService.storeTransaction(transaction);
     }   
     @GetMapping("/search/{userId}")
-    public ArrayList<Transaction> getTransactionsByUserId(@PathVariable String userId){
+    public ArrayDeque<Transaction> getTransactionsByUserId(@PathVariable String userId){
         return transactionService.getTransactionByUserId(userId);
     }
     

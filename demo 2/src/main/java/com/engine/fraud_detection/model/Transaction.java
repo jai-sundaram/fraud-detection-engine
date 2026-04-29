@@ -7,15 +7,17 @@ public class Transaction {
     private String location;
     private LocalDateTime timestamp;
     private String merchant; 
+    private String merchant_category;
     public Transaction() {
 
     }
-    public Transaction(String userId, int amount, String location, LocalDateTime timestamp, String merchant){
+    public Transaction(String userId, int amount, String location, LocalDateTime timestamp, String merchant, String merchant_category){
         this.userId = userId;
         this.amount = amount; 
         this.location = location;
         this.timestamp = timestamp;
         this.merchant = merchant; 
+        this.merchant_category = merchant_category;
     }
     public String getUserId() {
         return userId;
@@ -45,8 +47,14 @@ public class Transaction {
     public void setMerchant(String merchant){
         this.merchant = merchant;
     }
+    public String getMerchantCategory(){
+        return merchant_category;
+    }
+    public void setMerchantCategory(String merchant_category){
+        this.merchant_category = merchant_category;
+    }
     public String toString(){
-        return "Transaction{userId='" + userId + "', amount=" + amount + ", location='" + location + "', timestamp=" + timestamp + ", merchant='" + merchant + "'}";
+        return "Transaction{userId='" + userId + "', amount=" + amount + ", location='" + location + "', timestamp=" + timestamp + ", merchant='" + merchant + "', merchant_category='" + merchant_category + "'}";
     }
 }
 
