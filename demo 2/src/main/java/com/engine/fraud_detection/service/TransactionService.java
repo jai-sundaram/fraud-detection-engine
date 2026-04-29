@@ -2,11 +2,12 @@
 // Geo-velocity fraud detection (Analyzing speed of location changes between transactions) 
 // https://www.fraud.net/glossary/geo-velocity-fraud-detection#what-is-geo-velocity-fraud-detection
 // Amount anomaly: The transaction amount is unusually large 
-// Suspicious merchant: New or uncrecognized merchant 
-// Time anomaly: Transaction is made at unusual time compared to usual patterns
+// Suspicious merchant: New or uncrecognized merchant (new merchant, new merchant category )
+// Time anomaly: Transaction is made at unusual time compared to usual patterns (between 12AM- 5AM)
 
 package com.engine.fraud_detection.service;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 
 import org.springframework.stereotype.Service;
@@ -17,17 +18,21 @@ import java.util.HashMap;
 import java.util.Map;
 @Service
 public class TransactionService {
-    private Map<String, ArrayList<Transaction>> allTransactions = new HashMap<>();
+    private Map<String, ArrayDeque<Transaction>> allTransactions = new HashMap<>();
+    private ArrayList<String[]> merchants;
     public TransactionService(){
     }
     public void storeTransaction(Transaction transaction){
         String userId = transaction.getUserId();
         //if the userId is not already in the map, add it with an empty list of transactions 
-        allTransactions.putIfAbsent(userId, new ArrayList<>());
+        allTransactions.putIfAbsent(userId, new ArrayDeque<>());
         //add the transaction to the user's list of transactions
-        allTransactions.get(userId).add(transaction);
+        allTransactions.get(userId).addLast(transaction);
+
+        // Every single time u add a new transaction, remove transactions that are older than 10 minutes 
+
     }
-    public ArrayList<Transaction> getTransactionByUserId(String userId){
+    public ArrayDeque<Transaction> getTransactionByUserId(String userId){
         return allTransactions.get(userId);
     }
     
