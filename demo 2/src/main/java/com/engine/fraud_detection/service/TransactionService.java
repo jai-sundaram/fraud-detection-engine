@@ -20,17 +20,15 @@ public class TransactionService {
     private Map<String, ArrayList<Transaction>> allTransactions = new HashMap<>();
     public TransactionService(){
     }
-    public void processTransaction(Transaction transaction){
+    public void storeTransaction(Transaction transaction){
         String userId = transaction.getUserId();
         //if the userId is not already in the map, add it with an empty list of transactions 
         allTransactions.putIfAbsent(userId, new ArrayList<>());
         //add the transaction to the user's list of transactions
         allTransactions.get(userId).add(transaction);
-        ArrayList<Transaction> userTransactions = allTransactions.get(userId);
-        for (int i = 0; i < userTransactions.size(); i++){
-            Transaction t = userTransactions.get(i);
-            System.out.println(t.toString());
-        }
+    }
+    public ArrayList<Transaction> getTransactionByUserId(String userId){
+        return allTransactions.get(userId);
     }
     
 }
