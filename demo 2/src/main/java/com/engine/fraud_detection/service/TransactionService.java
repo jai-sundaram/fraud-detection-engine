@@ -5,13 +5,13 @@
 // Suspicious merchant: New or uncrecognized merchant 
 // Time anomaly: Transaction is made at unusual time compared to usual patterns
 
-package com.engine.service;
+package com.engine.fraud_detection.service;
 
 import java.util.ArrayList;
 
 import org.springframework.stereotype.Service;
 
-import com.engine.model.Transaction;
+import com.engine.fraud_detection.model.Transaction;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +27,10 @@ public class TransactionService {
         //add the transaction to the user's list of transactions
         allTransactions.get(userId).add(transaction);
         ArrayList<Transaction> userTransactions = allTransactions.get(userId);
-        System.out.println(userTransactions);
+        for (int i = 0; i < userTransactions.size(); i++){
+            Transaction t = userTransactions.get(i);
+            System.out.println(t.toString());
+        }
     }
     
 }

@@ -1,12 +1,12 @@
-package com.engine.controller;
+package com.engine.fraud_detection.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.engine.model.Transaction;
-import com.engine.service.TransactionService;
+import com.engine.fraud_detection.model.Transaction;
+import com.engine.fraud_detection.service.TransactionService;
 
 @RestController
 public class TransactionController {

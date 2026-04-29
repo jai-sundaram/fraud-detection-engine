@@ -1,4 +1,4 @@
-package com.engine.model;
+package com.engine.fraud_detection.model;
 import java.time.LocalDateTime;
 
 public class Transaction {
@@ -44,6 +44,9 @@ public class Transaction {
     }
     public void setMerchant(String merchant){
         this.merchant = merchant;
+    }
+    public String toString(){
+        return "Transaction{userId='" + userId + "', amount=" + amount + ", location='" + location + "', timestamp=" + timestamp + ", merchant='" + merchant + "'}";
     }
 }
 
