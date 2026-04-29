@@ -1,12 +1,7 @@
-package com.model;
-
+package com.engine.model;
 import java.time.LocalDateTime;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 
-@Entity 
 public class Transaction {
-    @Id
     private String userId; 
     private int amount;     
     private String location;

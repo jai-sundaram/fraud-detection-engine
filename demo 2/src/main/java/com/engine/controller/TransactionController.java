@@ -1,12 +1,12 @@
-package com.controller;
+package com.engine.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.model.Transaction;
-import com.service.TransactionService;
+import com.engine.model.Transaction;
+import com.engine.service.TransactionService;
 
 @RestController
 public class TransactionController {
@@ -19,6 +19,6 @@ public class TransactionController {
     @PostMapping("/process")
     public void processTransaction(@RequestBody Transaction transaction){
         transactionService.processTransaction(transaction);
-    }
+    }   
     
 }
