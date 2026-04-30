@@ -38,6 +38,7 @@ public class TransactionService {
         //get all transactions for the user 
         ArrayDeque<Transaction> userTransactions= allTransactions.get(userId);
         if (userTransactions.size()>0){
+            System.out.println(engine.velocityCheck(transaction, userTransactions));
             System.out.println(engine.geoVelocityCheck(transaction, userTransactions));
         }
 

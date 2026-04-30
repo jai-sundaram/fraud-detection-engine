@@ -41,7 +41,7 @@ public class FraudDetectionEngine {
             return "high risk";
         }
     }
-    public double geoVelocityCheck(Transaction transaction, ArrayDeque<Transaction> userTransactions) throws JOpenCageException{
+    public String geoVelocityCheck(Transaction transaction, ArrayDeque<Transaction> userTransactions) throws JOpenCageException{
         String currLocation = transaction.getLocation();
         String lastLocation = userTransactions.peekLast().getLocation();
         //find the distance in miles 
@@ -50,9 +50,17 @@ public class FraudDetectionEngine {
         LocalDateTime currTime = transaction.getTimeStamp();
         LocalDateTime lastTime = userTransactions.peekLast().getTimeStamp();
         double timeDifference = Duration.between(lastTime, currTime).toHours();
-        double speed = distance;
+        double speed = distance / timeDifference;
+        if (speed <=80){
+            return "normal";
+        }
+        else if (speed <=300){
+            return "medium risk";
+        }
+        else{
+            return "high risk";
+        }
 
-        return speed;
     }
     //haversine formula to calculate distance between two cities (using lat/long coordinates)
     //https://www.baeldung.com/java-find-distance-between-points
