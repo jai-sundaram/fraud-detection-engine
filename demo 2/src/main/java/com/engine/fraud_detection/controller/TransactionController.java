@@ -27,5 +27,8 @@ public class TransactionController {
     public ArrayDeque<Transaction> getTransactionsByUserId(@PathVariable String userId){
         return transactionService.getTransactionByUserId(userId);
     }
-    
-}
+    @GetMapping("/process")
+    public String processTransaction(@RequestBody Transaction transaction){
+        return transactionService.processTransaction(transaction);
+    }
+}   
