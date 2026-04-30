@@ -84,6 +84,44 @@ public class FraudDetectionEngine {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         return c * 3958.8;
     }
+    //for amount anomaly, we will use z-score 
+    //the z-score tells you how many standard deviations a point is from the average 
+    //this can help tell us how unusual a transaciton amount is comapred to normal 
+    public String amountAnomalyCheck(Transaction transaction, ArrayDeque<Transaction> userTransactions){
+        ArrayList<Double> userAmounts = new ArrayList<>();
+        double currAmt = transaction.getAmount();
+        for (Transaction t: userTransactions){
+            userAmounts.add((double) t.getAmount());
+        }
+        //calculating the mean
+        double total = 0;
+        int count = 0;
+        for (double amt: userAmounts){
+            total += amt;
+            count += 1;
+        }
+        double mean = total / count;
+        //calculating the standard deviation
+        double newSum = 0;
+        for (double amt: userAmounts){
+            newSum += Math.pow(amt-mean, 2);
+        }
+        double stddev = Math.sqrt(newSum / count);
+        //calculating the z-score 
+        double z_score = (currAmt - mean)/stddev;
+        //z score <=2, normal 
+        //zscore 2 < x <= 3, medium risk
+        //zscore > 3, high risk 
+        if(z_score <=2){
+            return "normal";
+        }
+        else if (z_score <3){
+            return "medium risk";
+        }
+        else{
+            return "high risk"; 
+        }
+    }
 
     
 }
