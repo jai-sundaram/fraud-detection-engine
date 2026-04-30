@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 
+import org.springframework.beans.factory.annotation.Value;
+
 public class FraudDetectionEngine {
     public FraudDetectionEngine(){
     }
@@ -12,6 +14,8 @@ public class FraudDetectionEngine {
     //normal - <3 in 1 minute 
     //medium risk - 3-5 in 1 minute 
     //high risk -> 5+ in 1 minute 
+    @Value("${geocoding.api.key}")
+    private String key; 
     public String velocityCheck(Transaction transaction, ArrayDeque<Transaction> userTransactions){
         ArrayList<Transaction> transactionsInTheLastMinute = new ArrayList<>();
         LocalDateTime curr = transaction.getTimeStamp();
