@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.engine.fraud_detection.model.Transaction;
 import com.engine.fraud_detection.service.TransactionService;
+import com.opencagedata.jopencage.JOpenCageException;
 
 @RestController
 public class TransactionController {
@@ -20,7 +21,7 @@ public class TransactionController {
         this.transactionService = transactionService;
     }
     @PostMapping("/store")
-    public void storeTransaction(@RequestBody Transaction transaction){
+    public void storeTransaction(@RequestBody Transaction transaction) throws JOpenCageException{
         transactionService.storeTransaction(transaction);
     }   
     // @GetMapping("/search/{userId}")

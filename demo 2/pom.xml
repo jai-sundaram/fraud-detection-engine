@@ -39,6 +39,12 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+    		<groupId>com.opencagedata</groupId>
+    		<artifactId>jopencage</artifactId>
+    		<version>3.0.0</version>
+    		<scope>compile</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

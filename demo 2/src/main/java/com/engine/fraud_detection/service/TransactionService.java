@@ -1,4 +1,4 @@
-// Velocity check (number of transactions made within a specific time frame) 
+// Velocity check (number of transactions made within a specific time frame)  - done 
 // Geo-velocity fraud detection (Analyzing speed of location changes between transactions) 
 // https://www.fraud.net/glossary/geo-velocity-fraud-detection#what-is-geo-velocity-fraud-detection
 // Amount anomaly: The transaction amount is unusually large 
@@ -12,10 +12,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.engine.fraud_detection.model.FraudDetectionEngine;
 import com.engine.fraud_detection.model.Transaction;
+import com.opencagedata.jopencage.JOpenCageException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,10 +25,12 @@ import java.util.Map;
 public class TransactionService {
     private Map<String, ArrayDeque<Transaction>> allTransactions = new HashMap<>();
     private ArrayList<String[]> merchants;
-    private FraudDetectionEngine engine = new FraudDetectionEngine();
-    public TransactionService(){
+    private FraudDetectionEngine engine ;
+    @Autowired
+    public TransactionService(FraudDetectionEngine engine){
+        this.engine = engine;
     }
-    public void storeTransaction(Transaction transaction){
+    public void storeTransaction(Transaction transaction) throws JOpenCageException{
         String userId = transaction.getUserId();
         int riskScore = 0;
         //if the userId is not already in the map, add it with an empty list of transactions 
@@ -34,11 +38,12 @@ public class TransactionService {
         //get all transactions for the user 
         ArrayDeque<Transaction> userTransactions= allTransactions.get(userId);
         if (userTransactions.size()>0){
-            System.out.println(engine.velocityCheck(transaction, userTransactions));
+            System.out.println(engine.geoVelocityCheck(transaction, userTransactions));
         }
 
         //add the transaction to the user's list of transactions
         allTransactions.get(userId).addLast(transaction);
+
 
         // Every single time u add a new transaction, remove transactions for this user that are older than 10 minutes 
         //first, let us get the deque of transactios for the current user 
