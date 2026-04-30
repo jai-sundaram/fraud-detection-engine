@@ -28,10 +28,18 @@ public class TransactionService {
     }
     public void storeTransaction(Transaction transaction){
         String userId = transaction.getUserId();
+        int riskScore = 0;
         //if the userId is not already in the map, add it with an empty list of transactions 
         allTransactions.putIfAbsent(userId, new ArrayDeque<>());
+        //get all transactions for the user 
+        ArrayDeque<Transaction> userTransactions= allTransactions.get(userId);
+        if (userTransactions.size()>0){
+            System.out.println(engine.velocityCheck(transaction, userTransactions));
+        }
+
         //add the transaction to the user's list of transactions
         allTransactions.get(userId).addLast(transaction);
+
         // Every single time u add a new transaction, remove transactions for this user that are older than 10 minutes 
         //first, let us get the deque of transactios for the current user 
         //When we affect this deque, we also affect the allTransactions deque, since the this gives us a reference 
@@ -41,16 +49,6 @@ public class TransactionService {
         // //     userTransactions.removeFirst();
         // // }
         // System.out.println(engine.velocityCheck(transaction, userTransactions));
-
-    }
-
-    public ArrayDeque<Transaction> getTransactionByUserId(String userId){
-        return allTransactions.get(userId);
-    }
-    public String  processTransaction(Transaction transaction){
-        String userId = transaction.getUserId();
-        ArrayDeque<Transaction> userTransactions = allTransactions.get(userId);
-        return engine.velocityCheck(transaction, userTransactions);
     }
     
 }

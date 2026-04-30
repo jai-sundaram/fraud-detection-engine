@@ -23,12 +23,12 @@ public class TransactionController {
     public void storeTransaction(@RequestBody Transaction transaction){
         transactionService.storeTransaction(transaction);
     }   
-    @GetMapping("/search/{userId}")
-    public ArrayDeque<Transaction> getTransactionsByUserId(@PathVariable String userId){
-        return transactionService.getTransactionByUserId(userId);
-    }
-    @GetMapping("/process")
-    public String processTransaction(@RequestBody Transaction transaction){
-        return transactionService.processTransaction(transaction);
-    }
+    // @GetMapping("/search/{userId}")
+    // public ArrayDeque<Transaction> getTransactionsByUserId(@PathVariable String userId){
+    //     return transactionService.getTransactionByUserId(userId);
+    // }
+    // @GetMapping("/process")
+    // public String processTransaction(@RequestBody Transaction transaction){
+    //     return transactionService.processTransaction(transaction);
+    // }
 }   
