@@ -6,17 +6,15 @@ public class Transaction {
     private int amount;     
     private String location;
     private LocalDateTime timestamp;
-    private String merchant; 
-    private String merchant_category;
+    private int merchant_category;
     public Transaction() {
 
     }
-    public Transaction(String userId, int amount, String location, LocalDateTime timestamp, String merchant, String merchant_category){
+    public Transaction(String userId, int amount, String location, LocalDateTime timestamp, int merchant_category){
         this.userId = userId;
         this.amount = amount; 
         this.location = location;
         this.timestamp = timestamp;
-        this.merchant = merchant; 
         this.merchant_category = merchant_category;
     }
     public String getUserId() {
@@ -41,20 +39,14 @@ public class Transaction {
     public void setTimeStamp(LocalDateTime timestamp){
         this.timestamp = timestamp;
     }
-    public String getMerchant(){
-        return merchant; 
-    }
-    public void setMerchant(String merchant){
-        this.merchant = merchant;
-    }
-    public String getMerchantCategory(){
+    public int getMerchantCategory(){
         return merchant_category;
     }
-    public void setMerchantCategory(String merchant_category){
+    public void setMerchantCategory(int merchant_category){
         this.merchant_category = merchant_category;
     }
     public String toString(){
-        return "Transaction{userId='" + userId + "', amount=" + amount + ", location='" + location + "', timestamp=" + timestamp + ", merchant='" + merchant + "', merchant_category='" + merchant_category + "'}";
+        return "Transaction{userId='" + userId + "', amount=" + amount + ", location='" + location + "', timestamp=" + timestamp + ", merchant_category='" + merchant_category + "'}";
     }
 }
 

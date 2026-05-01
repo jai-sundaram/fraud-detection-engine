@@ -24,7 +24,6 @@ import java.util.Map;
 @Service
 public class TransactionService {
     private Map<String, ArrayDeque<Transaction>> allTransactions = new HashMap<>();
-    private ArrayList<String[]> merchants;
     private FraudDetectionEngine engine ;
     @Autowired
     public TransactionService(FraudDetectionEngine engine){

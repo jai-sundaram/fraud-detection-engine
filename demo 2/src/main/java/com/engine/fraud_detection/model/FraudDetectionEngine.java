@@ -4,6 +4,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -121,6 +123,41 @@ public class FraudDetectionEngine {
         else{
             return "high risk"; 
         }
+    }
+    public double merchantCheck(Transaction transaction, ArrayDeque<Transaction>userTransactions){
+        //no need to track the actual merchant (Costco vs Kroger) bc too noisy 
+        //tracking categories - (Retail, Crypto, ) - use MCC (Merchant Category Codes )
+        //https://www.linkedin.com/pulse/mcc-codes-high-risk-low-risk-%D0%B8-middle-risk-businesses-alex-d/
+        //https://zenpayments.com/blog/high-risk-mcc-codes/
+        //gambling, financial services,tourism and travel, health and beauty, alcohol and tobacco products, various online stores 
+        //im using a set because it has a contains method/O(1) search 
+        Set<Integer> high_risk = Set.of(77995, 7999, 6012, 6051, 6211, 6540, 3000, 3001, 3050, 3351, 3352, 3501, 4112, 4722, 5047, 5976, 7277, 5921, 5922, 5971, 5993, 4814, 4816, 4899, 7994, 7996, 7997);
+        //retail trade in food and beverages, entartainment, automotive parts and services, various services such as work of lawyers and realtors 
+        Set<Integer> medium_risk = Set.of(5411, 5422, 5441, 5451, 7832, 7922, 7929, 5531, 5532, 7538, 7392, 8111, 8999);
+        //if high risk -> x amt 
+        //if medium risk -> y amt 
+        //if normal -> z amt 
+        //if seen not seen before, multiply by 1.5 
+        Set<Integer> merchants = new HashSet<>();
+        for(Transaction t: userTransactions){
+            merchants.add(t.getMerchantCategory());
+        }
+        int category = transaction.getMerchantCategory();
+        double risk = 0;
+        if (high_risk.contains(category)){
+            risk = 20; //or some other number idk 
+        }
+        else if (medium_risk.contains(category)){
+            risk = 10; //or other 
+        }
+        else{
+            risk = 5; // or other 
+        }
+        if (merchants.contains(category) == false){
+            risk *= 1.5;
+        }
+
+        return risk;
     }
 
     
