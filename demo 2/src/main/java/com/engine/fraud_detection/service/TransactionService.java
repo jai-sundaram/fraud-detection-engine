@@ -37,8 +37,27 @@ public class TransactionService {
         //get all transactions for the user 
         ArrayDeque<Transaction> userTransactions= allTransactions.get(userId);
         if (userTransactions.size()>0){
-            System.out.println(engine.velocityCheck(transaction, userTransactions));
-            System.out.println(engine.geoVelocityCheck(transaction, userTransactions));
+            // System.out.println(engine.velocityCheck(transaction, userTransactions));
+            // System.out.println(engine.geoVelocityCheck(transaction, userTransactions));
+            // System.out.println(engine.merchantCheck(transaction, userTransactions));
+            // System.out.println(engine.timeCheck(transaction));
+            double total = engine.velocityCheck(transaction, userTransactions) + engine.geoVelocityCheck(transaction, userTransactions) + engine.amountAnomalyCheck(transaction, userTransactions) + engine.merchantCheck(transaction, userTransactions) + engine.timeCheck(transaction);
+            //<5 - low risk 
+            //5 - 20 medium risk
+            //20+ high risk
+            if (total < 5){
+                System.out.println("Low risk transaction");
+                allTransactions.get(userId).addLast(transaction);
+
+            }
+            else if (total < 20){
+                System.out.println("Medium risk transaction");
+                allTransactions.get(userId).addLast(transaction);
+            }
+            else{
+                System.out.println("High risk transaction");
+                //do not process transaction/do not add to the list 
+            }
         }
 
         //add the transaction to the user's list of transactions

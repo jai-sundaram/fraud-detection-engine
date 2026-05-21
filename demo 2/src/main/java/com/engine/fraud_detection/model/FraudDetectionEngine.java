@@ -25,7 +25,7 @@ public class FraudDetectionEngine {
     //high risk -> 5+ in 1 minute 
     @Value("${geocoding.api.key}")
     private String key; 
-    public String velocityCheck(Transaction transaction, ArrayDeque<Transaction> userTransactions){
+    public double velocityCheck(Transaction transaction, ArrayDeque<Transaction> userTransactions){
         ArrayList<Transaction> transactionsInTheLastMinute = new ArrayList<>();
         LocalDateTime curr = transaction.getTimeStamp();
         for (Transaction t: userTransactions){
@@ -34,16 +34,16 @@ public class FraudDetectionEngine {
             }
         }
         if (transactionsInTheLastMinute.size()<3){
-            return "normal";
+            return 0; //normal
         }
         else if (transactionsInTheLastMinute.size() <5){
-            return "medium risk";
+            return 5; //medium risk
         }
         else {
-            return "high risk";
+            return 10; //high risk
         }
     }
-    public String geoVelocityCheck(Transaction transaction, ArrayDeque<Transaction> userTransactions) throws JOpenCageException{
+    public double geoVelocityCheck(Transaction transaction, ArrayDeque<Transaction> userTransactions) throws JOpenCageException{
         String currLocation = transaction.getLocation();
         String lastLocation = userTransactions.peekLast().getLocation();
         //find the distance in miles 
@@ -54,13 +54,13 @@ public class FraudDetectionEngine {
         double timeDifference = Duration.between(lastTime, currTime).toHours();
         double speed = distance / timeDifference;
         if (speed <=80){
-            return "normal";
+            return 0; //normal 
         }
         else if (speed <=300){
-            return "medium risk";
+            return 5; //medium risk
         }
         else{
-            return "high risk";
+            return 10; //high risk
         }
 
     }
@@ -89,7 +89,7 @@ public class FraudDetectionEngine {
     //for amount anomaly, we will use z-score 
     //the z-score tells you how many standard deviations a point is from the average 
     //this can help tell us how unusual a transaciton amount is comapred to normal 
-    public String amountAnomalyCheck(Transaction transaction, ArrayDeque<Transaction> userTransactions){
+    public double amountAnomalyCheck(Transaction transaction, ArrayDeque<Transaction> userTransactions){
         ArrayList<Double> userAmounts = new ArrayList<>();
         double currAmt = transaction.getAmount();
         for (Transaction t: userTransactions){
@@ -115,13 +115,13 @@ public class FraudDetectionEngine {
         //zscore 2 < x <= 3, medium risk
         //zscore > 3, high risk 
         if(z_score <=2){
-            return "normal";
+            return 0; //normal
         }
         else if (z_score <3){
-            return "medium risk";
+            return 5; //medium risk
         }
         else{
-            return "high risk"; 
+            return 10; //high risk
         }
     }
     public double merchantCheck(Transaction transaction, ArrayDeque<Transaction>userTransactions){
@@ -145,19 +145,30 @@ public class FraudDetectionEngine {
         int category = transaction.getMerchantCategory();
         double risk = 0;
         if (high_risk.contains(category)){
-            risk = 20; //or some other number idk 
+            risk = 10; //high risk
         }
         else if (medium_risk.contains(category)){
-            risk = 10; //or other 
+            risk = 5; //medium risk
         }
         else{
-            risk = 5; // or other 
+            risk = 1; //low risk 
         }
         if (merchants.contains(category) == false){
+            //multiply by 1.5 if user never made transaction in this category 
             risk *= 1.5;
         }
 
         return risk;
+    }
+    //Medium risk if transaction is between 12AM and 5AM, otherwise normal 
+    public double timeCheck(Transaction transaction){
+        int hour = transaction.getTimeStamp().getHour();
+        if (hour >= 0 && hour < 5){
+            return 5; //medium risk
+        }
+        else{
+            return 0; //normal 
+        }
     }
 
     
