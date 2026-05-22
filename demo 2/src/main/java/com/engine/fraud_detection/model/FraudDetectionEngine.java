@@ -37,10 +37,10 @@ public class FraudDetectionEngine {
             return 0; //normal
         }
         else if (transactionsInTheLastMinute.size() <5){
-            return 5; //medium risk
+            return 5.00; //medium risk
         }
         else {
-            return 10; //high risk
+            return 10.00; //high risk
         }
     }
     public double geoVelocityCheck(Transaction transaction, ArrayDeque<Transaction> userTransactions) throws JOpenCageException{
@@ -51,16 +51,16 @@ public class FraudDetectionEngine {
         //find the time difference in hours 
         LocalDateTime currTime = transaction.getTimeStamp();
         LocalDateTime lastTime = userTransactions.peekLast().getTimeStamp();
-        double timeDifference = Duration.between(lastTime, currTime).toHours();
+        double timeDifference = Duration.between(lastTime, currTime).toSeconds() / 3600.0;
         double speed = distance / timeDifference;
         if (speed <=80){
             return 0; //normal 
         }
         else if (speed <=300){
-            return 5; //medium risk
+            return 5.00; //medium risk
         }
         else{
-            return 10; //high risk
+            return 10.00; //high risk
         }
 
     }
@@ -115,13 +115,13 @@ public class FraudDetectionEngine {
         //zscore 2 < x <= 3, medium risk
         //zscore > 3, high risk 
         if(z_score <=2){
-            return 0; //normal
+            return 0.00; //normal
         }
         else if (z_score <3){
-            return 5; //medium risk
+            return 5.00; //medium risk
         }
         else{
-            return 10; //high risk
+            return 10.00; //high risk
         }
     }
     public double merchantCheck(Transaction transaction, ArrayDeque<Transaction>userTransactions){
