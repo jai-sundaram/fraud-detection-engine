@@ -164,10 +164,10 @@ public class FraudDetectionEngine {
     public double timeCheck(Transaction transaction){
         int hour = transaction.getTimeStamp().getHour();
         if (hour >= 0 && hour < 5){
-            return 5; //medium risk
+            return 5.00; //medium risk
         }
         else{
-            return 0; //normal 
+            return 0.00; //normal 
         }
     }
 

@@ -72,5 +72,42 @@ public class EngineModelTest {
         Transaction transaction9 = new Transaction("9", 1000.00, "San Francisco, California", LocalDateTime.of(2026, 8, 26, 21, 50, 20), 5422);
         assertEquals(10.00, engine.amountAnomalyCheck(transaction9, userTransactions));
     }
+    @Test() 
+    public void testMerchantCheck(){
+        ArrayDeque<Transaction> userTransactions = new ArrayDeque<>();
+        Transaction transaction1 = new Transaction("1", 100.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 14, 32, 45), 7999);
+        Transaction transaction2 = new Transaction("2", 150.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 14, 35, 20), 5411);
+        Transaction transaction3 = new Transaction("3", 250.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 15, 45, 20), 5440);
+        Transaction transaction3a = new Transaction("3A", 250.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 15, 45, 20), 7011);
+
+        userTransactions.add(transaction1);
+        userTransactions.add(transaction2);
+        userTransactions.add(transaction3);
+        userTransactions.add(transaction3a);
+        Transaction transaction4 = new Transaction("4", 500.00, "San Francisco, California", LocalDateTime.of(2026, 6, 23, 20, 50, 20), 7999);
+        assertEquals(10.00, engine.merchantCheck(transaction4, userTransactions));
+        Transaction transaction5 = new Transaction("5", 500.00, "San Francisco, California", LocalDateTime.of(2026, 6, 23, 20, 50, 20), 6012);
+        assertEquals(15.00, engine.merchantCheck(transaction5, userTransactions));
+        Transaction transaction6 = new Transaction("6", 500.00, "San Francisco, California", LocalDateTime.of(2026, 6, 23, 20, 50, 20), 5411);
+        assertEquals(5.00, engine.merchantCheck(transaction6, userTransactions));
+        Transaction transaction7 = new Transaction("7", 500.00, "San Francisco, California", LocalDateTime.of(2026, 6, 23, 20, 50, 20), 7929);
+        assertEquals(7.50, engine.merchantCheck(transaction7, userTransactions));
+        Transaction transaction8 = new Transaction("8", 500.00, "San Francisco, California", LocalDateTime.of(2026, 6, 23, 20, 50, 20), 7011);
+        assertEquals(1.00, engine.merchantCheck(transaction8, userTransactions));
+        Transaction transaction9 = new Transaction("9", 500.00, "San Francisco, California", LocalDateTime.of(2026, 6, 23, 20, 50, 20), 5812);
+        assertEquals(1.50, engine.merchantCheck(transaction9, userTransactions));
+    }
+    @Test()
+    public void testTimeCheck(){
+        Transaction transaction1 = new Transaction("1", 100.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 14, 32, 45), 5422);
+        assertEquals(0.00, engine.timeCheck(transaction1));
+        Transaction transaction2 = new Transaction("2", 100.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 2, 32, 45), 5422);
+        assertEquals(5.00, engine.timeCheck(transaction2));
+        Transaction transaction3 = new Transaction("3", 100.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 0, 32, 45), 5422);
+        assertEquals(5.00, engine.timeCheck(transaction3));
+        Transaction transaction4 = new Transaction("4", 100.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 5, 32, 45), 5422);
+        assertEquals(0.00, engine.timeCheck(transaction4));
+
+    }
     
 }
