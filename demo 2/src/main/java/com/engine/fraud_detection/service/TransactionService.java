@@ -29,41 +29,39 @@ public class TransactionService {
     public TransactionService(FraudDetectionEngine engine){
         this.engine = engine;
     }
-    public void storeTransaction(Transaction transaction) throws JOpenCageException{
+    public String storeTransaction(Transaction transaction) throws JOpenCageException{
         String userId = transaction.getUserId();
-        int riskScore = 0;
         //if the userId is not already in the map, add it with an empty list of transactions 
         allTransactions.putIfAbsent(userId, new ArrayDeque<>());
         //get all transactions for the user 
         ArrayDeque<Transaction> userTransactions= allTransactions.get(userId);
+        double total = 0;
         if (userTransactions.size()>0){
             // System.out.println(engine.velocityCheck(transaction, userTransactions));
             // System.out.println(engine.geoVelocityCheck(transaction, userTransactions));
             // System.out.println(engine.merchantCheck(transaction, userTransactions));
             // System.out.println(engine.timeCheck(transaction));
-            double total = engine.velocityCheck(transaction, userTransactions) + engine.geoVelocityCheck(transaction, userTransactions) + engine.amountAnomalyCheck(transaction, userTransactions) + engine.merchantCheck(transaction, userTransactions) + engine.timeCheck(transaction);
+            total = engine.velocityCheck(transaction, userTransactions) + engine.geoVelocityCheck(transaction, userTransactions) + engine.merchantCheck(transaction, userTransactions) + engine.timeCheck(transaction); }
+        if(userTransactions.size()>=5){
+            total += engine.amountAnomalyCheck(transaction, userTransactions);
+        }
+        if (userTransactions.size() == 0){
+            total = 1; //the first transaction
+        }
             //<5 - low risk 
             //5 - 20 medium risk
             //20+ high risk
-            if (total < 5){
-                System.out.println("Low risk transaction");
+        if (total < 5){
                 allTransactions.get(userId).addLast(transaction);
-
+                return "Low risk transaction. Transaction processed.";
             }
-            else if (total < 20){
-                System.out.println("Medium risk transaction");
+        else if (total < 20){
                 allTransactions.get(userId).addLast(transaction);
+                return "Medium risk transaction. Transaction processed.";
             }
             else{
-                System.out.println("High risk transaction");
-                //do not process transaction/do not add to the list 
+                return "High risk transaction. Transaction declined.";
             }
-        }
-
-        //add the transaction to the user's list of transactions
-        allTransactions.get(userId).addLast(transaction);
-
-
         // Every single time u add a new transaction, remove transactions for this user that are older than 10 minutes 
         //first, let us get the deque of transactios for the current user 
         //When we affect this deque, we also affect the allTransactions deque, since the this gives us a reference 
@@ -73,6 +71,11 @@ public class TransactionService {
         // //     userTransactions.removeFirst();
         // // }
         // System.out.println(engine.velocityCheck(transaction, userTransactions));
+    }
+    public ArrayDeque<Transaction> getAllUserTransactions(String userId){
+        //deque of transactions for the user 
+        ArrayDeque<Transaction> userTransactions = allTransactions.get(userId);
+        return userTransactions;
     }
     
 }

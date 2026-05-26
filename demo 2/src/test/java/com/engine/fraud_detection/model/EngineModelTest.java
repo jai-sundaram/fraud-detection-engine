@@ -15,7 +15,7 @@ public class EngineModelTest {
     @Autowired()
     private FraudDetectionEngine engine;
     @Test()
-    public void testVelocityCheck(){
+    void testVelocityCheck(){
         Transaction transaction1 = new Transaction("1", 100.00, "San Francisco", LocalDateTime.of(2026, 5, 22, 14, 32, 45), 5422);
         Transaction transaction2 = new Transaction("2", 50.00, "San Francisco", LocalDateTime.of(2026, 5, 22, 14, 35, 30), 5422);
         Transaction transaction3 = new Transaction("3", 75.00, "San Francisco", LocalDateTime.of(2026, 5, 22, 14, 40, 5), 5422);
@@ -37,7 +37,7 @@ public class EngineModelTest {
         assertEquals(10.00, engine.velocityCheck(transaction8, userTransactions));
     }
     @Test()
-    public void testGeoVelocityCheck() throws JOpenCageException{
+    void testGeoVelocityCheck() throws JOpenCageException{
         ArrayDeque<Transaction> userTransactions = new ArrayDeque<>();
         Transaction transaction1 = new Transaction("1", 100.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 14, 32, 45), 5422);
         userTransactions.add(transaction1);
@@ -51,7 +51,7 @@ public class EngineModelTest {
         assertEquals(0.00, engine.geoVelocityCheck(transaction5, userTransactions));
     }
     @Test()
-    public void amountAnomalyCheckTest(){
+    void amountAnomalyCheckTest(){
         ArrayDeque<Transaction> userTransactions = new ArrayDeque<>();
         Transaction transaction1 = new Transaction("1", 100.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 14, 32, 45), 5422);
         Transaction transaction2 = new Transaction("2", 150.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 14, 35, 20), 5422);
@@ -73,7 +73,7 @@ public class EngineModelTest {
         assertEquals(10.00, engine.amountAnomalyCheck(transaction9, userTransactions));
     }
     @Test() 
-    public void testMerchantCheck(){
+    void testMerchantCheck(){
         ArrayDeque<Transaction> userTransactions = new ArrayDeque<>();
         Transaction transaction1 = new Transaction("1", 100.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 14, 32, 45), 7999);
         Transaction transaction2 = new Transaction("2", 150.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 14, 35, 20), 5411);
@@ -98,7 +98,7 @@ public class EngineModelTest {
         assertEquals(1.50, engine.merchantCheck(transaction9, userTransactions));
     }
     @Test()
-    public void testTimeCheck(){
+    void testTimeCheck(){
         Transaction transaction1 = new Transaction("1", 100.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 14, 32, 45), 5422);
         assertEquals(0.00, engine.timeCheck(transaction1));
         Transaction transaction2 = new Transaction("2", 100.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 2, 32, 45), 5422);
