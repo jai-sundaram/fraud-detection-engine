@@ -22,7 +22,7 @@ import com.opencagedata.jopencage.JOpenCageException;
 public class TransactionServiceTest {
     private TransactionService transactionService;
     //we want to mock the engine, only testing the transactionService not the engine 
-    @Mock
+    @Mock()
     private FraudDetectionEngine engine;
     @BeforeEach()
     void setUp(){

@@ -21,8 +21,8 @@ public class TransactionController {
         this.transactionService = transactionService;
     }
     @PostMapping("/store")
-    public void storeTransaction(@RequestBody Transaction transaction) throws JOpenCageException{
-        transactionService.storeTransaction(transaction);
+    public String storeTransaction(@RequestBody Transaction transaction) throws JOpenCageException{
+        return transactionService.storeTransaction(transaction);
     }   
     @GetMapping("/search/{userId}")
     public ArrayDeque<Transaction> getAllUserTransactions(@PathVariable String userId){
