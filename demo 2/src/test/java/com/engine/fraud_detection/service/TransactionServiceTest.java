@@ -84,6 +84,27 @@ public class TransactionServiceTest {
         userTransaction1.add(transaction1);
         assertIterableEquals(userTransaction1, transactionService.getAllUserTransactions("1"));
     }
+    @Test
+    void latencyTest() throws JOpenCageException {
+
+        Transaction transaction = new Transaction(
+            "1",
+            100.00,
+            "San Francisco, California",
+            LocalDateTime.now(),
+            5422
+        );
+
+        long start = System.nanoTime();
+
+        transactionService.storeTransaction(transaction);
+
+        long end = System.nanoTime();
+
+        double elapsedMs = (end - start);
+
+         //   throw new RuntimeException( "Average latency: " + elapsedMs + " nanoseconds");
+    }
 
     
 }
