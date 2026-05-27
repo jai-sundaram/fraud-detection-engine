@@ -3,7 +3,8 @@ package com.engine.fraud_detection.model;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.LocalDateTime;
-import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ public class EngineModelTest {
         Transaction transaction1 = new Transaction("1", 100.00, "San Francisco", LocalDateTime.of(2026, 5, 22, 14, 32, 45), 5422);
         Transaction transaction2 = new Transaction("2", 50.00, "San Francisco", LocalDateTime.of(2026, 5, 22, 14, 35, 30), 5422);
         Transaction transaction3 = new Transaction("3", 75.00, "San Francisco", LocalDateTime.of(2026, 5, 22, 14, 40, 5), 5422);
-        ArrayDeque<Transaction> userTransactions = new ArrayDeque<>();
+        List<Transaction> userTransactions = new ArrayList<>();
         userTransactions.add(transaction1);
         userTransactions.add(transaction2);
         assertEquals(0.00, engine.velocityCheck(transaction3, userTransactions));
@@ -38,7 +39,7 @@ public class EngineModelTest {
     }
     @Test()
     void testGeoVelocityCheck() throws JOpenCageException{
-        ArrayDeque<Transaction> userTransactions = new ArrayDeque<>();
+        List<Transaction> userTransactions = new ArrayList<>();
         Transaction transaction1 = new Transaction("1", 100.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 14, 32, 45), 5422);
         userTransactions.add(transaction1);
         Transaction transaction2 = new Transaction("2", 100.00, "New York, New York", LocalDateTime.of(2026, 5, 22, 14, 35, 20), 5422);
@@ -52,7 +53,7 @@ public class EngineModelTest {
     }
     @Test()
     void amountAnomalyCheckTest(){
-        ArrayDeque<Transaction> userTransactions = new ArrayDeque<>();
+        List<Transaction> userTransactions = new ArrayList<>();
         Transaction transaction1 = new Transaction("1", 100.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 14, 32, 45), 5422);
         Transaction transaction2 = new Transaction("2", 150.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 14, 35, 20), 5422);
         Transaction transaction3 = new Transaction("3", 250.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 15, 45, 20), 5422);
@@ -74,7 +75,7 @@ public class EngineModelTest {
     }
     @Test() 
     void testMerchantCheck(){
-        ArrayDeque<Transaction> userTransactions = new ArrayDeque<>();
+        List<Transaction> userTransactions = new ArrayList<>();
         Transaction transaction1 = new Transaction("1", 100.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 14, 32, 45), 7999);
         Transaction transaction2 = new Transaction("2", 150.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 14, 35, 20), 5411);
         Transaction transaction3 = new Transaction("3", 250.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 15, 45, 20), 5440);

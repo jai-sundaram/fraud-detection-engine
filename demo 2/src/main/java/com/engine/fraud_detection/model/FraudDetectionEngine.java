@@ -1,10 +1,10 @@
 package com.engine.fraud_detection.model;
-
+//Redis does not have to be implemented here, we are not fetching any data, just implementing the logic 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +25,7 @@ public class FraudDetectionEngine {
     //high risk -> 5+ in 1 minute 
     @Value("${geocoding.api.key}")
     private String key; 
-    public double velocityCheck(Transaction transaction, ArrayDeque<Transaction> userTransactions){
+    public double velocityCheck(Transaction transaction, List<Transaction> userTransactions){
         ArrayList<Transaction> transactionsInTheLastMinute = new ArrayList<>();
         LocalDateTime curr = transaction.getTimeStamp();
         for (Transaction t: userTransactions){
@@ -43,14 +43,14 @@ public class FraudDetectionEngine {
             return 10.00; //high risk
         }
     }
-    public double geoVelocityCheck(Transaction transaction, ArrayDeque<Transaction> userTransactions) throws JOpenCageException{
+    public double geoVelocityCheck(Transaction transaction, List<Transaction> userTransactions) throws JOpenCageException{
         String currLocation = transaction.getLocation();
-        String lastLocation = userTransactions.peekLast().getLocation();
+        String lastLocation = userTransactions.get(userTransactions.size() - 1).getLocation();
         //find the distance in miles 
         double distance = calculateDistance(currLocation, lastLocation);
         //find the time difference in hours 
         LocalDateTime currTime = transaction.getTimeStamp();
-        LocalDateTime lastTime = userTransactions.peekLast().getTimeStamp();
+        LocalDateTime lastTime = userTransactions.get(userTransactions.size() - 1).getTimeStamp();
         double timeDifference = Duration.between(lastTime, currTime).toSeconds() / 3600.0;
         double speed = distance / timeDifference;
         if (speed <=80){
@@ -89,7 +89,7 @@ public class FraudDetectionEngine {
     //for amount anomaly, we will use z-score 
     //the z-score tells you how many standard deviations a point is from the average 
     //this can help tell us how unusual a transaciton amount is comapred to normal 
-    public double amountAnomalyCheck(Transaction transaction, ArrayDeque<Transaction> userTransactions){
+    public double amountAnomalyCheck(Transaction transaction, List<Transaction> userTransactions){
         ArrayList<Double> userAmounts = new ArrayList<>();
         double currAmt = transaction.getAmount();
         for (Transaction t: userTransactions){
@@ -124,7 +124,7 @@ public class FraudDetectionEngine {
             return 10.00; //high risk
         }
     }
-    public double merchantCheck(Transaction transaction, ArrayDeque<Transaction>userTransactions){
+    public double merchantCheck(Transaction transaction, List<Transaction>userTransactions){
         //no need to track the actual merchant (Costco vs Kroger) bc too noisy 
         //tracking categories - (Retail, Crypto, ) - use MCC (Merchant Category Codes )
         //https://www.linkedin.com/pulse/mcc-codes-high-risk-low-risk-%D0%B8-middle-risk-businesses-alex-d/
@@ -139,8 +139,10 @@ public class FraudDetectionEngine {
         //if normal -> z amt 
         //if seen not seen before, multiply by 1.5 
         Set<Integer> merchants = new HashSet<>();
-        for(Transaction t: userTransactions){
-            merchants.add(t.getMerchantCategory());
+        if (userTransactions.size() != 0){
+            for(Transaction t: userTransactions){
+                merchants.add(t.getMerchantCategory());
+            }
         }
         int category = transaction.getMerchantCategory();
         double risk = 0;
@@ -153,7 +155,7 @@ public class FraudDetectionEngine {
         else{
             risk = 1; //low risk 
         }
-        if (merchants.contains(category) == false){
+        if (merchants.size() != 0 && merchants.contains(category) == false){
             //multiply by 1.5 if user never made transaction in this category 
             risk *= 1.5;
         }

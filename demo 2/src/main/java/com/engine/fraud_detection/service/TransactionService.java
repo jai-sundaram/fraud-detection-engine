@@ -7,74 +7,60 @@
 
 package com.engine.fraud_detection.service;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.engine.fraud_detection.model.FraudDetectionEngine;
 import com.engine.fraud_detection.model.Transaction;
 import com.opencagedata.jopencage.JOpenCageException;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 @Service
 public class TransactionService {
-    private Map<String, ArrayDeque<Transaction>> allTransactions = new HashMap<>();
-    private FraudDetectionEngine engine ;
+    //redisTemplate is also key-value based just like how a HasHMap is key value based
+    //IN this case, the value type is "Transaction" because each value is technically a deque that only contains transactions
     @Autowired
-    public TransactionService(FraudDetectionEngine engine){
-        this.engine = engine;
-    }
+    private RedisTemplate <String, Transaction> allTransactions;
+    @Autowired
+    private FraudDetectionEngine engine ;
     public String storeTransaction(Transaction transaction) throws JOpenCageException{
         String userId = transaction.getUserId();
-        //if the userId is not already in the map, add it with an empty list of transactions 
-        allTransactions.putIfAbsent(userId, new ArrayDeque<>());
-        //get all transactions for the user 
-        ArrayDeque<Transaction> userTransactions= allTransactions.get(userId);
-        double total = 0;
-        if (userTransactions.size()>0){
-            // System.out.println(engine.velocityCheck(transaction, userTransactions));
-            // System.out.println(engine.geoVelocityCheck(transaction, userTransactions));
-            // System.out.println(engine.merchantCheck(transaction, userTransactions));
-            // System.out.println(engine.timeCheck(transaction));
-            total = engine.velocityCheck(transaction, userTransactions) + engine.geoVelocityCheck(transaction, userTransactions) + engine.merchantCheck(transaction, userTransactions) + engine.timeCheck(transaction); }
+        //fetch all transactions stored in redis for a given user/userid
+        //opsForList acessed the redis list oeprations
+        //range (key, start, end) -> (the key, the start index, last end). The start and end index in the list of transactions for that user. 
+        List<Transaction> userTransactions = allTransactions.opsForList().range(userId, 0, -1);
+        if (userTransactions == null){
+            userTransactions = new ArrayList<>();
+        }
+        double total = engine.merchantCheck(transaction, userTransactions) + engine.timeCheck(transaction);
+        if (userTransactions.size() > 0){
+        total += engine.velocityCheck(transaction, userTransactions) + engine.geoVelocityCheck(transaction, userTransactions); }
         if(userTransactions.size()>=5){
             total += engine.amountAnomalyCheck(transaction, userTransactions);
-        }
-        if (userTransactions.size() == 0){
-            total = 1; //the first transaction
         }
             //<5 - low risk 
             //5 - 20 medium risk
             //20+ high risk
-        if (total < 5){
-                allTransactions.get(userId).addLast(transaction);
+            //when you add multiple items with the same key, a list is basically created for that key, and further entries are added to that list
+            //if there is no entry with that key, it is auomtatically created
+        if (total < 10){
+                allTransactions.opsForList().rightPush(userId, transaction);
                 return "Low risk transaction. Transaction processed.";
             }
         else if (total < 20){
-                allTransactions.get(userId).addLast(transaction);
+                allTransactions.opsForList().rightPush(userId, transaction);
                 return "Medium risk transaction. Transaction processed.";
             }
             else{
                 return "High risk transaction. Transaction declined.";
-            }
-        // Every single time u add a new transaction, remove transactions for this user that are older than 10 minutes 
-        //first, let us get the deque of transactios for the current user 
-        //When we affect this deque, we also affect the allTransactions deque, since the this gives us a reference 
-        // ArrayDeque<Transaction> userTransactions= allTransactions.get(userId);
-        // LocalDateTime currDate = transaction.getTimeStamp();
-        // // while (Duration.between(userTransactions.peekFirst().getTimeStamp(), currDate).toMinutes()>10){
-        // //     userTransactions.removeFirst();
-        // // }
-        // System.out.println(engine.velocityCheck(transaction, userTransactions));
-    }
-    public ArrayDeque<Transaction> getAllUserTransactions(String userId){
+            } 
+        }
+    public List<Transaction> getAllUserTransactions(String userId){
         //deque of transactions for the user 
-        ArrayDeque<Transaction> userTransactions = allTransactions.get(userId);
+        List<Transaction> userTransactions = allTransactions.opsForList().range(userId, 0, -1);
         return userTransactions;
     }
     

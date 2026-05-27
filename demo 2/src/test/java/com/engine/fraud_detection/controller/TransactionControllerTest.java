@@ -16,7 +16,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 import java.time.LocalDateTime;
-import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -50,7 +51,7 @@ public class TransactionControllerTest {
     @Test()
     void getAllUserTransactions() throws Exception{
         Transaction transaction1 = new Transaction("1", 5100.00, "San Francisco, California", LocalDateTime.of(2026, 5, 22, 14, 32, 45), 5422);
-        ArrayDeque<Transaction> userTransactions = new ArrayDeque<>();
+        List<Transaction> userTransactions = new ArrayList<>();
         userTransactions.add(transaction1);
         when(transactionService.getAllUserTransactions("1"))
                 .thenReturn(userTransactions);
