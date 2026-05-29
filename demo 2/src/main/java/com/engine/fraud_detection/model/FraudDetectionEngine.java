@@ -98,6 +98,16 @@ public class FraudDetectionEngine {
         LocalDateTime currTime = transaction.getTimeStamp();
         LocalDateTime lastTime = userTransactions.peekLast().getTimeStamp();
         double timeDifference = Math.abs(Duration.between(lastTime, currTime).toSeconds()) / 3600.0;
+        if (timeDifference == 0){
+            //different location but at the same time 
+            if(distance > 0){
+                return 10.00; //high risk 
+            }
+            //same place at the same time, normal
+            else{
+                return 0.00; //normal 
+            }
+        }
         double speed = distance / timeDifference;
         if (speed <=80){
             return 0.00; //normal 
