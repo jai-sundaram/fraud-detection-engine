@@ -14,8 +14,9 @@ import org.springframework.stereotype.Service;
 
 import com.engine.fraud_detection.model.FraudDetectionEngine;
 import com.engine.fraud_detection.model.Transaction;
-import com.opencagedata.jopencage.JOpenCageException;
 
+import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 @Service
@@ -26,15 +27,16 @@ public class TransactionService {
     private RedisTemplate <String, Transaction> allTransactions;
     @Autowired
     private FraudDetectionEngine engine ;
-    public String storeTransaction(Transaction transaction) throws JOpenCageException{
+    public String storeTransaction(Transaction transaction) throws IOException, InterruptedException{
         String userId = transaction.getUserId();
         //fetch all transactions stored in redis for a given user/userid
         //opsForList acessed the redis list oeprations
         //range (key, start, end) -> (the key, the start index, last end). The start and end index in the list of transactions for that user. 
-        List<Transaction> userTransactions = allTransactions.opsForList().range(userId, 0, -1);
-        if (userTransactions == null){
-            userTransactions = new ArrayList<>();
+        List<Transaction> uTransactions = allTransactions.opsForList().range(userId, 0, -1);
+        if (uTransactions == null){
+            uTransactions = new ArrayList<>();
         }
+        ArrayDeque<Transaction> userTransactions = new ArrayDeque<>(uTransactions);
         double total = engine.merchantCheck(transaction, userTransactions) + engine.timeCheck(transaction);
         if (userTransactions.size() > 0){
         total += engine.velocityCheck(transaction, userTransactions) + engine.geoVelocityCheck(transaction, userTransactions); }
@@ -58,9 +60,10 @@ public class TransactionService {
                 return "High risk transaction. Transaction declined.";
             } 
         }
-    public List<Transaction> getAllUserTransactions(String userId){
+    public ArrayDeque<Transaction> getAllUserTransactions(String userId){
         //deque of transactions for the user 
-        List<Transaction> userTransactions = allTransactions.opsForList().range(userId, 0, -1);
+        List<Transaction> uTransactions = allTransactions.opsForList().range(userId, 0, -1);
+        ArrayDeque<Transaction> userTransactions = new ArrayDeque<>(uTransactions);
         return userTransactions;
     }
     

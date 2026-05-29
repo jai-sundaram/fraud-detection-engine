@@ -1,31 +1,30 @@
 package com.engine.fraud_detection.model;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 //Redis does not have to be implemented here, we are not fetching any data, just implementing the logic 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-
-import org.springframework.beans.factory.annotation.Value;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
-import com.opencagedata.jopencage.JOpenCageException;
-import com.opencagedata.jopencage.JOpenCageGeocoder;
-import com.opencagedata.jopencage.model.JOpenCageForwardRequest;
-import com.opencagedata.jopencage.model.JOpenCageLatLng;
-import com.opencagedata.jopencage.model.JOpenCageResponse;
+
 @Component 
 public class FraudDetectionEngine {
-    public FraudDetectionEngine(){
-    }
     //velocity checks (number of transactions within a certain time frame)
     //normal - <3 in 1 minute 
     //medium risk - 3-5 in 1 minute 
     //high risk -> 5+ in 1 minute 
-    @Value("${geocoding.api.key}")
-    private String key; 
-    public double velocityCheck(Transaction transaction, List<Transaction> userTransactions){
+    public double velocityCheck(Transaction transaction, ArrayDeque<Transaction> userTransactions){
         ArrayList<Transaction> transactionsInTheLastMinute = new ArrayList<>();
         LocalDateTime curr = transaction.getTimeStamp();
         for (Transaction t: userTransactions){
@@ -43,18 +42,65 @@ public class FraudDetectionEngine {
             return 10.00; //high risk
         }
     }
-    public double geoVelocityCheck(Transaction transaction, List<Transaction> userTransactions) throws JOpenCageException{
+    public double calculateDistance(String city1, String city2) throws IOException, InterruptedException{
+        //Nominatim rates limits - 1 request per second 
+            //city1
+            String encodedCity1 = URLEncoder.encode(city1, StandardCharsets.UTF_8);
+            String url = "https://nominatim.openstreetmap.org/search"
+                   + "?q=" + encodedCity1
+                   + "&format=json"
+                   + "&limit=1";
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("User-Agent", "MyApp/1.0 (your@email.com)") // Required by Nominatim
+                .GET()
+                .build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            String body = response.body();
+            JSONArray results = new JSONArray(body);
+            JSONObject location = results.getJSONObject(0);
+            double lat1 = Double.parseDouble(location.getString("lat"));
+            double lon1 = Double.parseDouble(location.getString("lon"));
+            //city2
+            String encodedCity2 = URLEncoder.encode(city2, StandardCharsets.UTF_8);
+            String url2 = "https://nominatim.openstreetmap.org/search"
+                   + "?q=" + encodedCity2
+                   + "&format=json"
+                   + "&limit=1";
+            HttpClient client2 = HttpClient.newHttpClient();
+            HttpRequest request2 = HttpRequest.newBuilder()
+                .uri(URI.create(url2))
+                .header("User-Agent", "MyApp/1.0 (je.sundaram@gmail.com)") // Required by Nominatim
+                .GET()
+                .build();
+            HttpResponse<String> response2 = client2.send(request2, HttpResponse.BodyHandlers.ofString());
+            String body2 = response2.body();
+            JSONArray results2 = new JSONArray(body2);
+            JSONObject location2 = results2.getJSONObject(0);
+            double lat2 = Double.parseDouble(location2.getString("lat"));
+            double lon2 = Double.parseDouble(location2.getString("lon"));
+            double latDistance = Math.toRadians(lat2-lat1);
+            double lonDistance = Math.toRadians(lon2 - lon1);
+            lat1 = Math.toRadians(lat1);
+            lat2 = Math.toRadians(lat2);
+            double a = Math.pow(Math.sin(latDistance/2),2) + Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(lonDistance/2), 2);
+            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return c * 3958.8;
+
+    }
+    public double geoVelocityCheck(Transaction transaction, ArrayDeque<Transaction> userTransactions) throws IOException, InterruptedException{
         String currLocation = transaction.getLocation();
-        String lastLocation = userTransactions.get(userTransactions.size() - 1).getLocation();
+        String lastLocation = userTransactions.peekLast().getLocation();
         //find the distance in miles 
-        double distance = calculateDistance(currLocation, lastLocation);
+        double distance = this.calculateDistance(currLocation, lastLocation);
         //find the time difference in hours 
         LocalDateTime currTime = transaction.getTimeStamp();
-        LocalDateTime lastTime = userTransactions.get(userTransactions.size() - 1).getTimeStamp();
-        double timeDifference = Duration.between(lastTime, currTime).toSeconds() / 3600.0;
+        LocalDateTime lastTime = userTransactions.peekLast().getTimeStamp();
+        double timeDifference = Math.abs(Duration.between(lastTime, currTime).toSeconds()) / 3600.0;
         double speed = distance / timeDifference;
         if (speed <=80){
-            return 0; //normal 
+            return 0.00; //normal 
         }
         else if (speed <=300){
             return 5.00; //medium risk
@@ -64,32 +110,10 @@ public class FraudDetectionEngine {
         }
 
     }
-    //haversine formula to calculate distance between two cities (using lat/long coordinates)
-    //https://www.baeldung.com/java-find-distance-between-points
-    private double calculateDistance(String city1, String city2) throws JOpenCageException{
-        JOpenCageGeocoder jOpenCageGeocoder = new JOpenCageGeocoder(this.key);
-        JOpenCageForwardRequest request1 = new JOpenCageForwardRequest(city1);
-        JOpenCageResponse response1 = jOpenCageGeocoder.forward(request1);
-        JOpenCageLatLng latLng1 = response1.getFirstPosition();
-        double lat1 = latLng1.getLat();
-        double lon1 = latLng1.getLng();
-        JOpenCageForwardRequest request2 = new JOpenCageForwardRequest(city2);
-        JOpenCageResponse response2= jOpenCageGeocoder.forward(request2);
-        JOpenCageLatLng latLng2 = response2.getFirstPosition();
-        double lat2 = latLng2.getLat();
-        double lon2 = latLng2.getLng();
-        double latDistance = Math.toRadians(lat2-lat1);
-        double lonDistance = Math.toRadians(lon2 - lon1);
-        lat1 = Math.toRadians(lat1);
-        lat2 = Math.toRadians(lat2);
-        double a = Math.pow(Math.sin(latDistance/2),2) + Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(lonDistance/2), 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return c * 3958.8;
-    }
     //for amount anomaly, we will use z-score 
     //the z-score tells you how many standard deviations a point is from the average 
     //this can help tell us how unusual a transaciton amount is comapred to normal 
-    public double amountAnomalyCheck(Transaction transaction, List<Transaction> userTransactions){
+    public double amountAnomalyCheck(Transaction transaction, ArrayDeque<Transaction> userTransactions){
         ArrayList<Double> userAmounts = new ArrayList<>();
         double currAmt = transaction.getAmount();
         for (Transaction t: userTransactions){
@@ -124,7 +148,7 @@ public class FraudDetectionEngine {
             return 10.00; //high risk
         }
     }
-    public double merchantCheck(Transaction transaction, List<Transaction>userTransactions){
+    public double merchantCheck(Transaction transaction, ArrayDeque<Transaction>userTransactions){
         //no need to track the actual merchant (Costco vs Kroger) bc too noisy 
         //tracking categories - (Retail, Crypto, ) - use MCC (Merchant Category Codes )
         //https://www.linkedin.com/pulse/mcc-codes-high-risk-low-risk-%D0%B8-middle-risk-businesses-alex-d/

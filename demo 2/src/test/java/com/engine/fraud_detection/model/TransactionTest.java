@@ -4,12 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.LocalDateTime;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class TransactionTest {
-    @Autowired
     private Transaction transaction1; 
+    @BeforeEach()
+    void setUp() {
+        transaction1 = new Transaction("1", 100.00, "San Francisco", LocalDateTime.of(2026, 5, 22, 14, 30, 45), 5422);
+    }
     @Test
     void testGetUserId(){
         assertEquals("1", transaction1.getUserId());
