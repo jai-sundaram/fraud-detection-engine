@@ -1,17 +1,16 @@
 # Fraud Detection Engine
 
-A Spring Boot-based fraud detection engine that analyzes financial transactions in real time using multiple risk signals, including transaction velocity, geo-velocity, merchant category, transaction amount anomalies, and transaction timing. The system leverages Redis for efficient transaction storage and retrieval, reducing average transaction processing latency by 47%.
+A Spring Boot-based fraud detection engine that analyzes financial transactions in real time using multiple risk signals, including transaction velocity, geo-velocity, merchant category, transaction amount anomalies, and transaction timing. 
 
 ## Features
 
 * Real-time transaction risk analysis
 * Velocity-based fraud detection
-* Geo-velocity analysis using OpenStreetMap Nominatim APIs
+* Geo-velocity analysis using OpenStreetMap Nominatim APIs and the Haversine formula  
 * Merchant Category Code (MCC) risk scoring
 * Amount anomaly detection using z-score analysis
 * Time-based fraud detection
 * Redis-backed transaction storage and retrieval
-* REST API for transaction processing
 * Unit and integration testing with JUnit and Mockito
 
 ## Tech Stack
@@ -28,13 +27,13 @@ A Spring Boot-based fraud detection engine that analyzes financial transactions 
 
 ### Velocity Check
 
-Evaluates the number of transactions performed within a short time window.
+Evaluates the number of transactions performed within a minute.
 
 | Transactions per Minute | Risk Score |
 | ----------------------- | ---------- |
-| < 3                     | Low        |
-| 3–4                     | Medium     |
-| ≥ 5                     | High       |
+| < 3                     | 0.00       |
+| 3–4                     | 5.00       |
+| ≥ 5                     | 10.00      |
 
 ### Geo-Velocity Check
 
@@ -42,21 +41,37 @@ Calculates the implied travel speed between consecutive transactions using geolo
 
 | Implied Speed | Risk Score |
 | ------------- | ---------- |
-| ≤ 80 mph      | Low        |
-| 80–300 mph    | Medium     |
-| > 300 mph     | High       |
+| ≤ 80 mph      | 0.00       |
+| 80–300 mph    | 5.00       |
+| > 300 mph     | 10.00      |
 
 ### Amount Anomaly Detection
 
 Uses z-score analysis to identify transactions that significantly deviate from a user's historical spending behavior.
+| # of Standard Deviations| Risk Score |
+| ----------------------- | ---------- |
+| < 3                     | 0.00       |
+| 3–4                     | 5.00       |
+| ≥ 5                     | 10.00      |
 
 ### Merchant Category Risk Analysis
 
 Assigns risk scores based on Merchant Category Codes (MCCs) and whether the user has previously transacted within that category.
+| Merchant                | Risk Score |
+| ----------------------- | ---------- |
+| Low Risk Merchant       | 1.00       |
+| Medium Risk Merchant    | 5.00       |
+| High Risk Merchant      | 10.00      |
+
+If the user had no previous transactions in that category, the risk score will be multiplied by 1.5. 
 
 ### Time-Based Analysis
 
-Flags transactions occurring during unusual hours (12 AM – 5 AM).
+Flags transactions occurring during unusual hours.
+| Time                    | Risk Score |
+| ----------------------- | ---------- |
+| 12:00AM - 5:00AM        | 1.00       |
+| 5:00AM - 11:00PM        | 5.00       |
 
 ## Performance
 
@@ -70,34 +85,6 @@ Average transaction processing latency:
 | Redis Storage     | 75 ms           |
 
 **Result:** 47% reduction in average transaction processing latency.
-
-## Architecture
-
-```text
-Client Request
-      |
-      v
-Transaction API
-      |
-      v
-Fraud Detection Engine
-      |
-      +--> Velocity Analysis
-      |
-      +--> Geo-Velocity Analysis
-      |
-      +--> Amount Anomaly Detection
-      |
-      +--> Merchant Risk Analysis
-      |
-      +--> Time-Based Analysis
-      |
-      v
-Risk Score Calculation
-      |
-      v
-Transaction Result
-```
 
 ## API Endpoints
 
@@ -122,7 +109,7 @@ Request Body:
 ### Retrieve User Transactions
 
 ```http
-GET /getAll?userId=1
+GET /search/userId
 ```
 
 ## Running the Project
@@ -143,7 +130,7 @@ docker compose up -d
 ### Run Application
 
 ```bash
-mvn spring-boot:run
+Run DemoApplication.java
 ```
 
 The application will start on:
@@ -152,22 +139,7 @@ The application will start on:
 http://localhost:8080
 ```
 
-## Testing
 
-Run unit tests:
-
-```bash
-mvn test
-```
-
-## Future Improvements
-
-* PostgreSQL persistence layer
-* JWT authentication and authorization
-* Machine learning-based fraud scoring
-* Kafka event streaming integration
-* Azure deployment pipeline
-* Real-time monitoring dashboard
 
 ## Author
 
