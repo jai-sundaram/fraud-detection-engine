@@ -1,4 +1,4 @@
-# Fraud Detection Engine
+# Rule-Based Transaction Fraud Detection Engine
 
 A Spring Boot-based fraud detection engine that analyzes financial transactions in real time using multiple risk signals, including transaction velocity, geo-velocity, merchant category, transaction amount anomalies, and transaction timing. 
 
@@ -19,9 +19,6 @@ A Spring Boot-based fraud detection engine that analyzes financial transactions 
 * Spring Boot
 * Redis
 * Docker
-* JUnit 5
-* Mockito
-* OpenStreetMap Nominatim API
 
 ## Fraud Detection Rules
 
