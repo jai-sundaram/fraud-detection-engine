@@ -53,11 +53,23 @@ public class FraudDetectionEngine {
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .header("User-Agent", "MyApp/1.0 (your@email.com)") // Required by Nominatim
+                .header("User-Agent", "fraud-detection-engine/1.0 (je.sundaram@gmail.com)") // Required by Nominatim
                 .GET()
                 .build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            String body = response.body();
+                if (response.statusCode() != 200) {
+    throw new IOException("Nominatim request failed: " + response.statusCode() + " " + response.body());
+}
+            if (response.statusCode() != 200) {
+            throw new IOException("Nominatim request failed: " + response.statusCode() + " " + response.body());
+        }
+
+            String body = response.body().trim();
+
+            if (!body.startsWith("[")) {
+                throw new IOException("Expected JSON array from Nominatim, got: " + body);
+            }
+
             JSONArray results = new JSONArray(body);
             JSONObject location = results.getJSONObject(0);
             double lat1 = Double.parseDouble(location.getString("lat"));
@@ -71,7 +83,7 @@ public class FraudDetectionEngine {
             HttpClient client2 = HttpClient.newHttpClient();
             HttpRequest request2 = HttpRequest.newBuilder()
                 .uri(URI.create(url2))
-                .header("User-Agent", "MyApp/1.0 (je.sundaram@gmail.com)") // Required by Nominatim
+                .header("User-Agent", "fraud-detection-engine/1.0 (je.sundaram@gmail.com)") // Required by Nominatim
                 .GET()
                 .build();
             HttpResponse<String> response2 = client2.send(request2, HttpResponse.BodyHandlers.ofString());
