@@ -124,11 +124,7 @@ cd fraud-detection-engine
 docker compose up -d
 ```
 
-### Run Application
-
-```bash
-Run DemoApplication.java
-```
+### Run DemoApplication.java
 
 The application will start on:
 
