@@ -68,7 +68,7 @@ Flags transactions occurring during unusual hours.
 | Time                    | Risk Score |
 | ----------------------- | ---------- |
 | 12:00AM - 5:00AM        | 1.00       |
-| 5:00AM - 11:00PM        | 5.00       |
+| 5:00AM - 11:00PM        | 0.00       |
 
 ## Performance
 
